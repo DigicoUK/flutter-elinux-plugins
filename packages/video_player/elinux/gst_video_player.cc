@@ -241,9 +241,9 @@ bool GstVideoPlayer::CreatePipeline() {
     std::cerr << "Failed to create a source" << std::endl;
     return false;
   }
-  gst_.video_convert = gst_element_factory_make("videoconvert", "videoconvert");
+  gst_.video_convert = gst_element_factory_make("vaapipostproc", "vaapipostproc");
   if (!gst_.video_convert) {
-    std::cerr << "Failed to create a videoconvert" << std::endl;
+    std::cerr << "Failed to create a vaapipostproc" << std::endl;
     return false;
   }
   gst_.video_sink = gst_element_factory_make("fakesink", "videosink");
@@ -264,7 +264,7 @@ bool GstVideoPlayer::CreatePipeline() {
   gst_bus_set_sync_handler(gst_.bus, HandleGstMessage, this, NULL);
 
   // Sets properties to fakesink to get the callback of a decoded frame.
-  g_object_set(G_OBJECT(gst_.video_sink), "sync", TRUE, "qos", FALSE, NULL);
+  g_object_set(G_OBJECT(gst_.video_sink), "sync", FALSE, "qos", FALSE, "drop", TRUE, NULL);
   g_object_set(G_OBJECT(gst_.video_sink), "signal-handoffs", TRUE, NULL);
   g_signal_connect(G_OBJECT(gst_.video_sink), "handoff",
                    G_CALLBACK(HandoffHandler), this);
@@ -289,6 +289,7 @@ bool GstVideoPlayer::CreatePipeline() {
   // Sets properties to playbin.
   g_object_set(gst_.playbin, "uri", uri_.c_str(), NULL);
   g_object_set(gst_.playbin, "video-sink", gst_.output, NULL);
+  g_object_set(gst_.playbin, "latency", 0, NULL);
   gst_bin_add_many(GST_BIN(gst_.pipeline), gst_.playbin, NULL);
 
   return true;
