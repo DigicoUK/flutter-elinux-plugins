@@ -630,8 +630,8 @@ flutter::EncodableValue VideoPlayerPlugin::WrapError(
 
 const std::string VideoPlayerPlugin::GetExecutableDirectory() {
   static char buf[1024] = {};
-  readlink("/proc/self/exe", buf, sizeof(buf) - 1);
-
+  const auto result = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
+  if (result < 0) return ".";
   std::string exe_path = std::string(buf);
   const int slash_pos = exe_path.find_last_of('/');
   return exe_path.substr(0, slash_pos);

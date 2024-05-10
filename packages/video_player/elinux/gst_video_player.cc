@@ -264,7 +264,7 @@ bool GstVideoPlayer::CreatePipeline() {
   gst_bus_set_sync_handler(gst_.bus, HandleGstMessage, this, NULL);
 
   // Sets properties to fakesink to get the callback of a decoded frame.
-  g_object_set(G_OBJECT(gst_.video_sink), "sync", FALSE, "qos", FALSE, "drop", TRUE, NULL);
+  g_object_set(G_OBJECT(gst_.video_sink), "sync", FALSE, "qos", FALSE, NULL);
   g_object_set(G_OBJECT(gst_.video_sink), "signal-handoffs", TRUE, NULL);
   g_signal_connect(G_OBJECT(gst_.video_sink), "handoff",
                    G_CALLBACK(HandoffHandler), this);
