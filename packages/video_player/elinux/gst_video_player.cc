@@ -8,9 +8,9 @@
 
 GstVideoPlayer::GstVideoPlayer(
     const std::string& uri, std::unique_ptr<VideoPlayerStreamHandler> handler)
-    : stream_handler_(std::move(handler))
-    , width_(0)
-    , height_(0) {
+    : width_(0)
+    , height_(0)
+    , stream_handler_(std::move(handler)) {
   gst_.pipeline = nullptr;
   gst_.playbin = nullptr;
   gst_.video_convert = nullptr;
