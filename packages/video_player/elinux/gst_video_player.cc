@@ -243,9 +243,9 @@ bool GstVideoPlayer::CreatePipeline() {
     std::cerr << "Failed to create a source" << std::endl;
     return false;
   }
-  gst_.video_convert = gst_element_factory_make("vaapipostproc", "vaapipostproc");
+  gst_.video_convert = gst_element_factory_make("videoconvert", "videoconvert");
   if (!gst_.video_convert) {
-    std::cerr << "Failed to create a vaapipostproc" << std::endl;
+    std::cerr << "Failed to create a videoconvert" << std::endl;
     return false;
   }
   gst_.video_sink = gst_element_factory_make("fakesink", "videosink");
