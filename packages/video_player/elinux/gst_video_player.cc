@@ -291,7 +291,7 @@ bool GstVideoPlayer::CreatePipeline() {
   // Sets properties to playbin.
   g_object_set(gst_.playbin, "uri", uri_.c_str(), NULL);
   g_object_set(gst_.playbin, "video-sink", gst_.output, NULL);
-  g_object_set(gst_.playbin, "latency", 0, NULL);
+  g_object_set(gst_.playbin, "latency", 18000000, NULL);
   gst_bin_add_many(GST_BIN(gst_.pipeline), gst_.playbin, NULL);
 
   return true;
