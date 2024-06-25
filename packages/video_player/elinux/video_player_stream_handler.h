@@ -21,7 +21,7 @@ class VideoPlayerStreamHandler {
   void OnNotifyFrameDecoded() { OnNotifyFrameDecodedInternal(); }
 
   // Notifies the completion of playing a video.
-  void OnNotifyCompleted() { OnNotifyCompletedInternal(); }
+  void OnNotifyCompleted(bool has_error, const std::string& error) { OnNotifyCompletedInternal(has_error, error); }
 
   // Notifies update of playing or pausing a video.
   void OnNotifyPlaying(bool is_playing) { OnNotifyPlayingInternal(is_playing); }
@@ -29,7 +29,7 @@ class VideoPlayerStreamHandler {
  protected:
   virtual void OnNotifyInitializedInternal() = 0;
   virtual void OnNotifyFrameDecodedInternal() = 0;
-  virtual void OnNotifyCompletedInternal() = 0;
+  virtual void OnNotifyCompletedInternal(bool has_error, const std::string& error) = 0;
   virtual void OnNotifyPlayingInternal(bool is_playing) = 0;
 };
 

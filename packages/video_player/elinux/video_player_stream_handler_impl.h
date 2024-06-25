@@ -6,6 +6,7 @@
 #define PACKAGES_VIDEO_PLAYER_VIDEO_PLAYER_ELINUX_VIDEO_PLAYER_STREAM_HANDLER_IMPL_H_
 
 #include <functional>
+#include <string>
 
 #include "video_player_stream_handler.h"
 
@@ -13,7 +14,7 @@ class VideoPlayerStreamHandlerImpl : public VideoPlayerStreamHandler {
  public:
   using OnNotifyInitialized = std::function<void()>;
   using OnNotifyFrameDecoded = std::function<void()>;
-  using OnNotifyCompleted = std::function<void()>;
+  using OnNotifyCompleted = std::function<void(bool, const std::string&)>;
   using OnNotifyPlaying = std::function<void(bool)>;
 
   VideoPlayerStreamHandlerImpl(OnNotifyInitialized on_notify_initialized,
@@ -47,9 +48,9 @@ class VideoPlayerStreamHandlerImpl : public VideoPlayerStreamHandler {
   }
 
   // |VideoPlayerStreamHandler|
-  void OnNotifyCompletedInternal() {
+  void OnNotifyCompletedInternal(bool has_error, const std::string& error) {
     if (on_notify_completed_) {
-      on_notify_completed_();
+      on_notify_completed_(has_error, error);
     }
   }
 

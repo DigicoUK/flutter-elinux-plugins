@@ -135,6 +135,10 @@ class ELinuxVideoPlayer extends VideoPlayerPlatform {
             rotationCorrection: map['rotationCorrection'] as int? ?? 0,
           );
         case 'completed':
+          if (map.containsKey('hasError') && map['hasError'] as bool) {
+            final String errorCode = (map.containsKey('errorText')) ? map['errorText'] as String : 'Unknown error';
+            throw PlatformException(code: errorCode, message: errorCode);
+          }
           return VideoEvent(
             eventType: VideoEventType.completed,
           );

@@ -18,6 +18,7 @@
 #include <mutex>
 #include <shared_mutex>
 #include <string>
+#include <atomic>
 
 #include "video_player_stream_handler.h"
 
@@ -80,6 +81,8 @@ class GstVideoPlayer {
   bool mute_ = false;
   bool auto_repeat_ = false;
   bool is_completed_ = false;
+  std::atomic_bool has_error_ = false;
+  std::string error_text;
   std::mutex mutex_event_completed_;
   std::shared_mutex mutex_buffer_;
   std::unique_ptr<VideoPlayerStreamHandler> stream_handler_;

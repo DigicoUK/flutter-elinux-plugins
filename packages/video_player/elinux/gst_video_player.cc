@@ -10,6 +10,8 @@ GstVideoPlayer::GstVideoPlayer(
     const std::string& uri, std::unique_ptr<VideoPlayerStreamHandler> handler)
     : width_(0)
     , height_(0)
+    , has_error_(false)
+    , error_text()
     , stream_handler_(std::move(handler)) {
   gst_.pipeline = nullptr;
   gst_.playbin = nullptr;
@@ -150,9 +152,9 @@ int64_t GstVideoPlayer::GetDuration() {
 
 int64_t GstVideoPlayer::GetCurrentPosition() {
   gint64 position = 0;
-
+  
   // Sometimes we get an error when playing streaming videos.
-  if (!gst_element_query_position(gst_.pipeline, GST_FORMAT_TIME, &position)) {
+  if (!has_error_ && !gst_element_query_position(gst_.pipeline, GST_FORMAT_TIME, &position)) {
     std::cerr << "Failed to get current position" << std::endl;
     return -1;
   }
@@ -171,9 +173,13 @@ int64_t GstVideoPlayer::GetCurrentPosition() {
       if (auto_repeat_) {
         SetSeek(0);
       } else {
-        stream_handler_->OnNotifyCompleted();
+        stream_handler_->OnNotifyCompleted(has_error_, error_text);
       }
     }
+  }
+
+  if (has_error_) {
+    return -1;
   }
 
   return position / GST_MSECOND;
@@ -274,7 +280,7 @@ bool GstVideoPlayer::CreatePipeline() {
                    NULL);
 
   // Adds caps to the converter to convert the color format to RGBA.
-  auto* caps = gst_caps_from_string("video/x-raw,format=RGBA");
+  auto* caps = gst_caps_from_string("video/x-raw,format=RGBA,height=360");
   auto link_ok =
       gst_element_link_filtered(gst_.video_convert, gst_.video_sink, caps);
   gst_caps_unref(caps);
@@ -468,6 +474,15 @@ GstBusSyncReply GstVideoPlayer::HandleGstMessage(GstBus* bus,
       g_printerr("ERROR from element %s: %s\n", GST_OBJECT_NAME(message->src),
                  error->message);
       g_printerr("Error details: %s\n", debug);
+      {
+        auto* self = reinterpret_cast<GstVideoPlayer*>(user_data);
+        std::lock_guard<std::mutex> lock(self->mutex_event_completed_);
+        self->is_completed_ = true;
+        if (!self->has_error_) {
+          self->has_error_ = true;
+          self->error_text = std::string(error->message);
+        }
+      }
       g_free(debug);
       g_error_free(error);
       break;

@@ -129,7 +129,7 @@ class VideoPlayerPlugin : public flutter::Plugin {
       flutter::MessageReply<flutter::EncodableValue> reply);
 
   void SendInitializedEventMessage(int64_t texture_id);
-  void SendPlayCompletedEventMessage(int64_t texture_id);
+  void SendPlayCompletedEventMessage(int64_t texture_id, bool has_error, const std::string& error);
   void SendIsPlayingStateUpdate(int64_t texture_id, bool is_playing);
 
   flutter::EncodableValue WrapError(const std::string& message,
@@ -363,8 +363,8 @@ void VideoPlayerPlugin::HandleCreateMethodCall(
           host->texture_registrar_->MarkTextureFrameAvailable(texture_id);
         },
         // OnNotifyCompleted
-        [texture_id, host = this]() {
-          host->SendPlayCompletedEventMessage(texture_id);
+        [texture_id, host = this](bool has_error, const std::string& error) {
+          host->SendPlayCompletedEventMessage(texture_id, has_error, error);
         },
         [texture_id, host = this](bool is_playing) {
           host->SendIsPlayingStateUpdate(texture_id, is_playing);
@@ -590,14 +590,18 @@ void VideoPlayerPlugin::SendInitializedEventMessage(int64_t texture_id) {
   players_[texture_id]->event_sink->Success(event);
 }
 
-void VideoPlayerPlugin::SendPlayCompletedEventMessage(int64_t texture_id) {
-  if (players_.find(texture_id) == players_.end() ||
+void VideoPlayerPlugin::SendPlayCompletedEventMessage(int64_t texture_id, bool has_error, const std::string& error) {
+  bool player_found = players_.find(texture_id) == players_.end();
+  if (player_found ||
       !players_[texture_id]->event_sink) {
     return;
   }
 
   flutter::EncodableMap encodables = {
-      {flutter::EncodableValue("event"), flutter::EncodableValue("completed")}};
+      {flutter::EncodableValue("event"),
+       flutter::EncodableValue("completed")},
+      {flutter::EncodableValue("hasError"), flutter::EncodableValue(has_error)},
+      {flutter::EncodableValue("errorText"), flutter::EncodableValue(error)}};
   flutter::EncodableValue event(encodables);
   players_[texture_id]->event_sink->Success(event);
 }
